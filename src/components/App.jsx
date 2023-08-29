@@ -1,86 +1,69 @@
-import { Component } from 'react';
+import { useState, useEffect } from 'react';
 import { SearchBar } from './Searchbar/Searchbar';
 import { ImageGallery } from './ImageGallery/ImageGallery';
 import { Loader } from './Loader/Loader';
 import { Button } from './Button/Button';
 import { Modal } from './Modal/Modal';
-import { fetchImages } from './Services/Services';
+import { fetchImages as getPhotos } from './Services/Services';
 import '../styles.css';
 
-export class App extends Component {
-  state = {
-    images: [],
-    query: '',
-    page: 1,
-    largeImageUrl: '',
-    totalHits: 0,
-    showModal: false,
-    isLoading: false,
+export function App() {
+  const [images, setImages] = useState([]);
+  const [query, setQuery] = useState('');
+  const [page, setPage] = useState(1);
+  const [largeImageUrl, setLargeImageUrl] = useState('');
+  const [totalHits, setTotalHits] = useState(0);
+  const [showModal, setShowModal] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    if (!query) return;
+    const fetchImages = () => {
+      setIsLoading(true);
+
+      getPhotos(query, page)
+        .then(response => {
+          setImages(prevImages => [...prevImages, ...response.data.hits]);
+          setTotalHits(response.data.totalHits);
+        })
+        .catch(error => console.error('Error fetching images:', error))
+        .finally(() => setIsLoading(false));
+    };
+    fetchImages();
+  }, [query, page]);
+
+  const handleLoadMore = () => {
+    setPage(prevState => prevState.page + 1);
   };
 
-  componentDidUpdate(prevProps, prevState) {
-    if (
-      prevState.query !== this.state.query ||
-      prevState.page !== this.state.page
-    ) {
-      this.fetchImages();
-    }
-  }
-
-  fetchImages = () => {
-    const { query, page } = this.state;
-
-    this.setState({ isLoading: true });
-
-    fetchImages(query, page)
-      .then(response => {
-        this.setState(prevState => ({
-          images: [...prevState.images, ...response.data.hits],
-          totalHits: response.data.totalHits,
-        }));
-      })
-      .catch(error => console.error('Error fetching images:', error))
-      .finally(() => this.setState({ isLoading: false }));
+  const handleSearchSubmit = newQuery => {
+    setQuery(newQuery);
+    setPage(1);
+    setImages([]);
   };
 
-  handleLoadMore = () => {
-    this.setState(prevState => ({
-      page: prevState.page + 1,
-    }));
+  const handleImageClick = image => {
+    setLargeImageUrl(image.largeImageURL);
+    setShowModal(false);
   };
 
-  handleSearchSubmit = query => {
-    this.setState({ query, page: 1, images: [] });
+  const handleCloseModal = () => {
+    setLargeImageUrl('');
   };
 
-  handleImageClick = image => {
-    this.setState({ largeImageUrl: image.largeImageURL, showModal: true });
-  };
-
-  handleCloseModal = () => {
-    this.setState({ showModal: false });
-  };
-
-  render() {
-    const { images, isLoading, showModal, largeImageUrl } = this.state;
-
-    return (
-      <div className="App">
-        <SearchBar onSubmit={this.handleSearchSubmit} />
-        <ImageGallery images={images} onItemClick={this.handleImageClick} />
-        {isLoading && <Loader />}
-        {!isLoading &&
-          images.length % 12 === 0 &&
-          this.state.page <= Math.ceil(this.state.totalHits / 12) && (
-            <Button onClick={this.handleLoadMore}>Load more</Button>
-          )}
-        {showModal && (
-          <Modal
-            onClose={this.handleCloseModal}
-            largeImageUrl={largeImageUrl}
-          />
+  return (
+    <div className="App">
+      <SearchBar onSubmit={handleSearchSubmit} />
+      <ImageGallery images={images} onItemClick={handleImageClick} />
+      {isLoading && <Loader />}
+      {!isLoading &&
+        images.length % 12 === 0 &&
+        page <= Math.ceil(totalHits / 12) && (
+          <Button onClick={handleLoadMore}>Load more</Button>
         )}
-      </div>
-    );
-  }
+      {showModal && (
+        <Modal onClose={handleCloseModal} largeImageUrl={largeImageUrl} />
+      )}
+    </div>
+  );
 }
