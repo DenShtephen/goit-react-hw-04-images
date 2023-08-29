@@ -48,7 +48,6 @@ export function App() {
   };
 
   const handleCloseModal = () => {
-    setLargeImageUrl('');
     setShowModal(false);
   };
 
