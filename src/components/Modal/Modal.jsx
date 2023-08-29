@@ -1,30 +1,29 @@
 import { useEffect } from 'react';
 
-export function Modal(props) {
+export function Modal({ onClose, largeImageUrl }) {
   useEffect(() => {
+    const handleKeyDown = evt => {
+      if (evt.code === 'Escape') {
+        onClose();
+      }
+    };
     window.addEventListener('keydown', handleKeyDown);
 
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, []);
-
-  const handleKeyDown = evt => {
-    if (evt.code === 'Escape') {
-      props.onClose();
-    }
-  };
+  }, [onClose]);
 
   const handleBackdropClick = evt => {
     if (evt.target === evt.currentTarget) {
-      props.onClose();
+      onClose();
     }
   };
 
   return (
     <div className="Overlay" onClick={handleBackdropClick}>
       <div className="Modal">
-        <img src={props.largeImageUrl} alt="" />
+        <img src={largeImageUrl} alt="" />
       </div>
     </div>
   );
