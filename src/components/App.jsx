@@ -33,7 +33,7 @@ export function App() {
   }, [query, page]);
 
   const handleLoadMore = () => {
-    setPage(prevState => prevState.page + 1);
+    setPage(prevState => prevState + 1);
   };
 
   const handleSearchSubmit = newQuery => {
