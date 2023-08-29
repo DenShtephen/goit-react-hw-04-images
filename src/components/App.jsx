@@ -44,11 +44,12 @@ export function App() {
 
   const handleImageClick = image => {
     setLargeImageUrl(image.largeImageURL);
-    setShowModal(false);
+    setShowModal(true);
   };
 
   const handleCloseModal = () => {
     setLargeImageUrl('');
+    setShowModal(false);
   };
 
   return (

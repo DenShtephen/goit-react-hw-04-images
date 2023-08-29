@@ -15,8 +15,8 @@ export function Modal(props) {
     }
   };
 
-  const handleBackdropClick = e => {
-    if (e.target === e.currentTarget) {
+  const handleBackdropClick = evt => {
+    if (evt.target === evt.currentTarget) {
       props.onClose();
     }
   };
